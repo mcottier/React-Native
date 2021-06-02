@@ -37,6 +37,8 @@ function RenderCampsite(props) {
 
   const recognizeDrag = ({ dx }) => (dx < -200 ? true : false);
 
+  const recognizeComment = ({ dx }) => (dx > 200 ? true : false);
+
   const panResponder = PanResponder.create({
     onStartShouldSetPanResponder: () => true,
     onPanResponderGrant: () => {
@@ -68,6 +70,8 @@ function RenderCampsite(props) {
           ],
           { cancelable: false }
         );
+      } else if (recognizeComment(gestureState)) {
+        props.onShowModal();
       }
       return true;
     },
@@ -125,8 +129,11 @@ function RenderComments({ comments }) {
           readonly
           startingValue={item.rating}
           imageSize={10}
-          alignItems={"flex-start"}
-          style={{ fontSize: 12, paddingVertical: "%5" }}
+          style={{
+            fontSize: 12,
+            paddingVertical: "5%",
+            alignItems: "flex-start",
+          }}
         />
         <Text style={{ fontSize: 12 }}>
           {`-- ${item.author}, ${item.date}`}
@@ -164,17 +171,21 @@ class CampsiteInfo extends Component {
   }
 
   handleComment(campsiteId) {
-    postComment(
+    this.props.postComment(
       campsiteId,
       this.state.rating,
       this.state.author,
       this.state.text
     );
+    this.toggleModal();
   }
 
   resetForm() {
     this.setState({
       showModal: false,
+      rating: 5,
+      author: "",
+      text: "",
     });
   }
 
@@ -234,7 +245,7 @@ class CampsiteInfo extends Component {
             <View style={{ margin: 10 }}>
               <Button
                 onPress={() => {
-                  this.handleComment();
+                  this.handleComment(campsiteId);
                   this.resetForm();
                 }}
                 color="#5637DD"
@@ -253,13 +264,14 @@ class CampsiteInfo extends Component {
             </View>
           </View>
         </Modal>
+        <RenderComments comments={comments} />
       </ScrollView>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  formRow: {
+  cardRow: {
     alignItems: "center",
     justifyContent: "center",
     flex: 1,
